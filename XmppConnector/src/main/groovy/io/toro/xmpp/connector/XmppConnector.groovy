@@ -8,11 +8,14 @@ import org.jivesoftware.smack.XMPPException
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode
 import org.jivesoftware.smack.chat.Chat
 import org.jivesoftware.smack.chat.ChatManager
+import org.jivesoftware.smack.chat.ChatManagerListener
 import org.jivesoftware.smack.packet.Presence
 import org.jivesoftware.smack.roster.Roster
 import org.jivesoftware.smack.roster.RosterEntry
 import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
+import org.jivesoftware.smackx.filetransfer.FileTransferManager
+import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer
 
 class XmppConnector {
 	static AbstractXMPPConnection connection
@@ -51,24 +54,50 @@ class XmppConnector {
 		newChat.sendMessage(message)
 	}
 	
-	public void changeStatus(){
+	public void changeStatus(String status){
 		Presence presence = new Presence(Presence.Type.available)
-		presence.setStatus("Online")
+		presence.setStatus(status)
 		connection.sendStanza(presence)
 	}
-
+	
+	public void getMessage(){
+		ChatManager chatManager = ChatManager.getInstanceFor(connection);
+		def bod = chatManager.addChatListener(
+			new ChatManagerListener() {
+				@Override
+				public void chatCreated(Chat chat, boolean createdLocally)
+				{
+					if (!createdLocally)
+						chat.addMessageListener(new MyNewMessageListener());;
+				}
+			});
+		
+		final long start = System.nanoTime();
+		while ((System.nanoTime() - start) / 1000000 < 20000) // do for 20 seconds
+		{
+		  Thread.sleep(500);
+		}
+	}
+	
+	static void sendFile(){
+		FileTransferManager ftm = new FileTransferManager(connection)
+		Roster roster = new Roster(connection)
+		OutgoingFileTransfer transfer = ftm.createOutgoingFileTransfer('raizel@john-garcia.toro.dev/Smack')
+		transfer.sendFile(new File('/Users/johngarcia/Desktop/test_casesx'), 'test cases')
+	}
+	
 	public static void main(String [] args){
-		def o = new XmppConnector()
-		o.setupConnection('ChatBot','localhost', 5222)
-		o.login('moderator','Toro_dev')
-		o.showChatContacts()
-		//o.sendMessage('raizel@john-garcia.toro.dev','TESTFollow this schema for Creating Issue:\n"createIssue"|{ProjectID}|{Summary}|{Description}')
+		def jbbr = new XmppConnector()
+		jbbr.setupConnection('ChatBot','localhost', 5222)
+		jbbr.login('moderator','Toro_dev')
+		jbbr.sendFile()
+		//jbbr.getMessage()
+		
+		//jbbr.showChatContacts()
+		//jbbr.changeStatus('I\'m Available')
+		//jbbr.sendMessage('raizel@john-garcia.toro.dev','Follow this schema for Creating Issue:\n"createIssue"|{ProjectID}|{Summary}|{Description}')
+		
 		//============================================================
 
-//		chatmanager.addChatListener()
-//		Presence presence = new Presence(Presence.Type.available)
-//		connection.sendStanza(presence)
-//		Chat newChat = chatmanager.createChat("raizel@john-garcia.toro.dev")
-//		newChat.sendMessage('Follow this schema for Creating Issue:\n"createIssue"|{ProjectID}|{Summary}|{Description}')
 	}
 }

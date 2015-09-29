@@ -3,7 +3,7 @@
   <groupId>Xmpp</groupId>
   <artifactId>Xmpp</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <packaging>pom</packaging> 
   <modules>
   	<module>XmppConnector</module>
   	<module>XmppAdapter</module>
