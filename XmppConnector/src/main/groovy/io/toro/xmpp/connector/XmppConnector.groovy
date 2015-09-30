@@ -16,6 +16,10 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
 import org.jivesoftware.smackx.filetransfer.FileTransferManager
 import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer
+import org.jivesoftware.smackx.jingleold.JingleManager
+import org.jivesoftware.smackx.jingleold.nat.BasicTransportManager
+import org.jivesoftware.smackx.muc.MultiUserChat
+import org.jivesoftware.smackx.muc.MultiUserChatManager
 
 class XmppConnector {
 	static AbstractXMPPConnection connection
@@ -35,10 +39,10 @@ class XmppConnector {
 	
     public void login(String userName, String password) throws XMPPException {
 		try {
-			connection.connect();
-			connection.login(userName, password);
+			connection.connect()
+			connection.login(userName, password)
 			} catch (SmackException e) {
-				e.printStackTrace();
+				e.printStackTrace()
 			}
     }
 
@@ -72,31 +76,44 @@ class XmppConnector {
 				}
 			});
 		
-		final long start = System.nanoTime();
+		final long start = System.nanoTime()
 		while ((System.nanoTime() - start) / 1000000 < 20000) // do for 20 seconds
 		{
-		  Thread.sleep(500);
+		  Thread.sleep(500)
 		}
 	}
 	
 	static void sendFile(){
 		FileTransferManager ftm = new FileTransferManager(connection)
-		Roster roster = new Roster(connection)
-		OutgoingFileTransfer transfer = ftm.createOutgoingFileTransfer('raizel@john-garcia.toro.dev/Smack')
+		OutgoingFileTransfer transfer = ftm.createOutgoingFileTransfer('raizel@john-garcia.toro.dev/sparkweb')
 		transfer.sendFile(new File('/Users/johngarcia/Desktop/test_casesx'), 'test cases')
+		//sleep(5000)
+		println transfer.getStatus()
 	}
 	
+	static void multiUserChatRoom(){
+		MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
+		MultiUserChat muc = manager.getMultiUserChat("test@conference.jabber.org")
+		muc.join('admin','raIzel04')
+	}
+	
+	static void voIPSession() {
+		//TODO
+	}
+
 	public static void main(String [] args){
 		def jbbr = new XmppConnector()
 		jbbr.setupConnection('ChatBot','localhost', 5222)
 		jbbr.login('moderator','Toro_dev')
-		jbbr.sendFile()
+
+		//jbbr.sendFile()
 		//jbbr.getMessage()
-		
 		//jbbr.showChatContacts()
 		//jbbr.changeStatus('I\'m Available')
 		//jbbr.sendMessage('raizel@john-garcia.toro.dev','Follow this schema for Creating Issue:\n"createIssue"|{ProjectID}|{Summary}|{Description}')
 		
+		//TODO: jbbr.multiUserChatRoom()
+		//TODO: jbbr.voIPSession()
 		//============================================================
 
 	}

@@ -22,6 +22,8 @@ public class MyNewMessageListener implements ChatMessageListener {
 							 def jira = new ZendeskDummyConnector()
 							 jira.createTicket(cred)
 						 }
+						 else
+						 println message.getBody()
 				 }	
  }
 
