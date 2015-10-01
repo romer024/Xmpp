@@ -9,6 +9,8 @@ import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode
 import org.jivesoftware.smack.chat.Chat
 import org.jivesoftware.smack.chat.ChatManager
 import org.jivesoftware.smack.chat.ChatManagerListener
+import org.jivesoftware.smack.chat.ChatMessageListener
+import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.packet.Presence
 import org.jivesoftware.smack.roster.Roster
 import org.jivesoftware.smack.roster.RosterEntry
@@ -17,9 +19,22 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
 import org.jivesoftware.smackx.filetransfer.FileTransferManager
 import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer
 import org.jivesoftware.smackx.jingleold.JingleManager
+import org.jivesoftware.smackx.jingleold.JingleSession
+import org.jivesoftware.smackx.jingleold.JingleSessionRequest
+import org.jivesoftware.smackx.jingleold.listeners.JingleSessionRequestListener
+import org.jivesoftware.smackx.jingleold.media.JingleMediaManager
+import org.jivesoftware.smackx.jingleold.mediaimpl.jmf.JmfMediaManager
+import org.jivesoftware.smackx.jingleold.mediaimpl.jspeex.SpeexMediaManager
+import org.jivesoftware.smackx.jingleold.mediaimpl.multi.MultiMediaManager
+import org.jivesoftware.smackx.jingleold.mediaimpl.sshare.ScreenShareMediaManager
+import org.jivesoftware.smackx.jingleold.mediaimpl.test.TestMediaManager
 import org.jivesoftware.smackx.jingleold.nat.BasicTransportManager
+import org.jivesoftware.smackx.jingleold.nat.ICETransportManager
 import org.jivesoftware.smackx.muc.MultiUserChat
 import org.jivesoftware.smackx.muc.MultiUserChatManager
+import org.jivesoftware.smackx.xdata.Form
+import org.jivesoftware.smackx.xdata.FormField.Type
+import org.jivesoftware.smackx.xdata.packet.DataForm
 
 class XmppConnector {
 	static AbstractXMPPConnection connection
@@ -91,20 +106,52 @@ class XmppConnector {
 		println transfer.getStatus()
 	}
 	
-	static void multiUserChatRoom(){
+	static void createMultiUserChatRoom(){
 		MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
-		MultiUserChat muc = manager.getMultiUserChat("test@conference.jabber.org")
-		muc.join('admin','raIzel04')
-	}
-	
-	static void voIPSession() {
-		//TODO
+		MultiUserChat muc = manager.getMultiUserChat('newRoom@conference.john-garcia.toro.dev')
+		muc.create('TestRoom')
+		Form mucForm = new Form(new DataForm())
+		muc.sendConfigurationForm(new Form(DataForm.Type.submit));
+		final long start = System.nanoTime()
 	}
 
+	static void joinRoom(String roomAddress){
+		MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection);
+		MultiUserChat muc = manager.getMultiUserChat(roomAddress)
+		muc.join('moderator','Toro_dev')
+//		final long start = System.nanoTime()
+//		while ((System.nanoTime() - start) / 1000000 < 20000) // do for 20 seconds
+//		{
+//		  Thread.sleep(500)
+//		}
+	}
+	
+	static void muChat(){
+		MultiUserChatManager manager = MultiUserChatManager.getInstanceFor(connection)
+		MultiUserChat muc = manager.getMultiUserChat('newRoom@conference.john-garcia.toro.dev/sparkweb')
+		muc.sendMessage('Hello there!')
+	}
+	
+	static void outgoingVoipSession() {
+		List<JingleMediaManager> mediaManagers = new ArrayList<JingleMediaManager>()
+		mediaManagers.add(new MultiMediaManager(new BasicTransportManager()))
+		JingleManager jm = new JingleManager(connection, mediaManagers)
+     	JingleSession outgoing = jm.createOutgoingJingleSession('raizel@john-garcia.toro.dev')
+		outgoing.startOutgoing()
+		println outgoing.sessionState
+	}
+		
 	public static void main(String [] args){
 		def jbbr = new XmppConnector()
 		jbbr.setupConnection('ChatBot','localhost', 5222)
 		jbbr.login('moderator','Toro_dev')
+
+		jbbr.outgoingVoipSession()
+		
+		//jbbr.CreateMultiUserChatRoom()
+		//jbbr.joinRoom('newRoom@conference.john-garcia.toro.dev')
+		//jbbr.muChat()
+
 
 		//jbbr.sendFile()
 		//jbbr.getMessage()
