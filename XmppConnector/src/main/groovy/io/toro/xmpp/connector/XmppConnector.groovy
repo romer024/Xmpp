@@ -1,5 +1,7 @@
 package io.toro.xmpp.connector
 
+import java.util.List;
+
 import org.jivesoftware.smack.AbstractXMPPConnection
 import org.jivesoftware.smack.ConnectionConfiguration
 import org.jivesoftware.smack.SASLAuthentication
@@ -39,6 +41,18 @@ import org.jivesoftware.smackx.xdata.packet.DataForm
 class XmppConnector {
 	static AbstractXMPPConnection connection
 	
+	static String saveCredentials(String alias, String username, String password){
+		String credentials = "${alias}~${username}~${password}"
+		"xmpp.${alias}".saveTOROProperty(credentials)
+		'Xmpp Credentials Saved!'
+	}
+	
+	static List<String> validateCredentials(String alias) {
+		String sets = "xmpp.${alias}".getTOROProperty()
+		String [] credentials = sets.split('~')
+		credentials as List
+	}
+	
 	static void setupConnection(String serviceName, String hostName, int portNum){
 		XMPPTCPConnectionConfiguration.Builder config = XMPPTCPConnectionConfiguration.builder()
 		.setServiceName(serviceName)
@@ -51,6 +65,11 @@ class XmppConnector {
 		connection = new XMPPTCPConnection(config.build())
 	}
 	
+	static void setupConnection(String username, String password, String server){
+		//TODO
+		AbstractXMPPConnection conn = new XMPPTCPConnection(username, password, server)
+		conn.connect()
+	}
 	
     public void login(String userName, String password) throws XMPPException {
 		try {
@@ -60,7 +79,14 @@ class XmppConnector {
 				e.printStackTrace()
 			}
     }
-
+	
+	
+	public void contactXmpp(String alias){
+		List credentials =  validateCredentials(alias)
+		setupConnection('chatBot','localhost',5222)
+		login(credentials[1],credentials[2])
+	}
+	
 	public void showChatContacts(){
 		Roster roster = Roster.getInstanceFor(connection);
 		Collection<RosterEntry> contacts = roster.getEntries()
@@ -69,11 +95,12 @@ class XmppConnector {
 	
 	public void sendMessage(String id, String message){
 		ChatManager chatmanager = ChatManager.getInstanceFor(connection)
-		Chat newChat = chatmanager.createChat('raizel@john-garcia.toro.dev')
+		Chat newChat = chatmanager.createChat(id)
 		newChat.sendMessage(message)
+		return null
 	}
 	
-	public void changeStatus(String status){
+	public changeStatus(String status){
 		Presence presence = new Presence(Presence.Type.available)
 		presence.setStatus(status)
 		connection.sendStanza(presence)
@@ -143,15 +170,18 @@ class XmppConnector {
 		
 	public static void main(String [] args){
 		def jbbr = new XmppConnector()
-		jbbr.setupConnection('ChatBot','localhost', 5222)
-		jbbr.login('moderator','Toro_dev')
-
-		jbbr.outgoingVoipSession()
+		//jbbr.contactXmpp('toroio')
 		
+//		jbbr.setupConnection('ChatBot','localhost', 5222)
+//		jbbr.login('moderator','Toro_dev')		
+		//jbbr.changeStatus('updating')
+		
+		//jbbr.saveCredentials('toroio','moderator', 'Toro_dev')
+		//jbbr.sendMessage('raizel@john-garcia.toro.dev','hi there')
+		//jbbr.outgoingVoipSession()
 		//jbbr.CreateMultiUserChatRoom()
 		//jbbr.joinRoom('newRoom@conference.john-garcia.toro.dev')
 		//jbbr.muChat()
-
 
 		//jbbr.sendFile()
 		//jbbr.getMessage()
@@ -159,7 +189,6 @@ class XmppConnector {
 		//jbbr.changeStatus('I\'m Available')
 		//jbbr.sendMessage('raizel@john-garcia.toro.dev','Follow this schema for Creating Issue:\n"createIssue"|{ProjectID}|{Summary}|{Description}')
 		
-		//TODO: jbbr.multiUserChatRoom()
 		//TODO: jbbr.voIPSession()
 		//============================================================
 

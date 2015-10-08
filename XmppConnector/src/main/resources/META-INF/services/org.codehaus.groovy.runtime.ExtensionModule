@@ -1,0 +1,4 @@
+moduleName=connector-xmpp
+moduleVersion=1.0-SNAPSHOT
+extensionClasses=io.toro.xmpp.connector.XmppConnector
+staticExtensionClasses=

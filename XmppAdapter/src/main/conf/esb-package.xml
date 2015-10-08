@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<esb-package context-path="/toro-xmpp"
+	enabled="true">
+</esb-package>

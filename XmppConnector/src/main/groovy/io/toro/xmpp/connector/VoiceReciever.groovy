@@ -14,6 +14,7 @@ import org.jivesoftware.smackx.jingleold.listeners.JingleSessionRequestListener
 import org.jivesoftware.smackx.jingleold.media.JingleMediaManager
 import org.jivesoftware.smackx.jingleold.mediaimpl.multi.MultiMediaManager
 import org.jivesoftware.smackx.jingleold.nat.BasicTransportManager
+import org.jivesoftware.smackx.jingleold.nat.BridgedTransportManager
 
 class VoiceReciever {
 	
@@ -43,17 +44,16 @@ class VoiceReciever {
 		List<JingleMediaManager> mediaManagers = new ArrayList<JingleMediaManager>()
 		mediaManagers.add(new MultiMediaManager(new BasicTransportManager()))
 		JingleManager jm = new JingleManager(connection, mediaManagers)
-		jm.addCreationListener()
+		jm.addCreationListener(new BridgedTransportManager(connection))
 		jm.addJingleSessionRequestListener(new JingleSessionRequestListener() {
-			public void sessionRequested(JingleSessionRequest request) {
 
+			public void sessionRequested(JingleSessionRequest request) {
 				try {
 			
 					JingleSession incoming = request.accept();
-						println 'acc'
-			
+				
 					incoming.startIncoming();
-						println 'inc'
+						
 				}
 				catch (XMPPException e) {
 					println e
